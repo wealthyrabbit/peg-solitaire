@@ -8,10 +8,10 @@ const ROOT_URL =
  * @see {@link https://miniapps.farcaster.xyz/docs/guides/publishing}
  */
 export const minikitConfig = {
-  accountAssociation: {
-    header: "",
-    payload: "",
-    signature: ""
+  "accountAssociation": {
+    "header": "eyJmaWQiOjQxMTEyNiwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDY1MGYzYzAwOUJFZDAwRTMzRTM5REUwM2NENEFDQTZlYjM0MGZEOGEifQ",
+    "payload": "eyJkb21haW4iOiJwZWctc29saXRhaXJlLWJldGEudmVyY2VsLmFwcCJ9",
+    "signature": "E9e9t/L8VTVzWiHNFZb6PRmXOz1rL4UIwO0zxZFJ7MYSAObjRwarQ5PnEqntN1bxsZqXIEgjujObbyC28YRYcRw="
   },
   miniapp: {
     version: "1",
@@ -33,4 +33,3 @@ export const minikitConfig = {
     ogImageUrl: `${ROOT_URL}/blue-hero.png`,
   },
 } as const;
-
