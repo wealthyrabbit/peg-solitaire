@@ -82,10 +82,10 @@ export default function PegSolitaire() {
 
   const loadLeaderboard = async () => {
     try {
-      const result = await window.storage.get('leaderboard', true);
-      if (result && result.value) {
-        const data = JSON.parse(result.value);
-        setLeaderboard(data);
+      const response = await fetch('/api/leaderboard');
+      if (response.ok) {
+        const data = await response.json();
+        setLeaderboard(data.leaderboard || []);
       }
     } catch (error) {
       console.error('Error loading leaderboard:', error);
@@ -94,33 +94,18 @@ export default function PegSolitaire() {
   };
 
   const saveScore = async () => {
+    console.log('🎯 Attempting to save score...');
+    console.log('User FID:', userFid);
+    console.log('Username:', username);
+    console.log('Timer:', timer);
+    
     if (!userFid || !username) {
-      console.log('No user info available');
+      console.log('❌ No user info available - not saving score');
       return;
     }
 
     try {
-      // Load current leaderboard
-      const result = await window.storage.get('leaderboard', true);
-      let currentLeaderboard: LeaderboardEntry[] = [];
-      
-      if (result && result.value) {
-        currentLeaderboard = JSON.parse(result.value);
-      }
-
-      // Check if user already has a better score
-      const existingEntry = currentLeaderboard.find(entry => entry.fid === userFid);
-      
-      if (existingEntry && existingEntry.time <= timer) {
-        // User already has a better or equal score, don't save
-        return;
-      }
-
-      // Remove old entry if exists
-      currentLeaderboard = currentLeaderboard.filter(entry => entry.fid !== userFid);
-
-      // Add new entry
-      const newEntry: LeaderboardEntry = {
+      const newEntry = {
         fid: userFid,
         username,
         displayName,
@@ -128,19 +113,20 @@ export default function PegSolitaire() {
         timestamp: Date.now()
       };
 
-      currentLeaderboard.push(newEntry);
+      const response = await fetch('/api/leaderboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newEntry)
+      });
 
-      // Sort by time (ascending) and keep top 10
-      currentLeaderboard.sort((a, b) => a.time - b.time);
-      currentLeaderboard = currentLeaderboard.slice(0, 10);
-
-      // Save to storage
-      await window.storage.set('leaderboard', JSON.stringify(currentLeaderboard), true);
-      setLeaderboard(currentLeaderboard);
-      
-      console.log('Score saved successfully!');
+      if (response.ok) {
+        const data = await response.json();
+        setLeaderboard(data.leaderboard);
+        console.log('✅ Score saved successfully!');
+        console.log('New leaderboard:', data.leaderboard);
+      }
     } catch (error) {
-      console.error('Error saving score:', error);
+      console.error('❌ Error saving score:', error);
     }
   };
 
