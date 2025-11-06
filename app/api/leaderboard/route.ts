@@ -18,7 +18,7 @@ export async function GET() {
   try {
     const leaderboard = await redis.get<LeaderboardEntry[]>('peg-solitaire-leaderboard') || [];
     return NextResponse.json({ leaderboard });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ leaderboard: [] });
   }
 }
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     await redis.set('peg-solitaire-leaderboard', leaderboard);
 
     return NextResponse.json({ leaderboard, message: 'Score saved' });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to save score' },
       { status: 500 }

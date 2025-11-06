@@ -56,7 +56,7 @@ export default function PegSolitaire() {
           setUserFid(context.user.fid);
           fetchUserDetails(context.user.fid);
         }
-      } catch (error) {
+      } catch {
       }
     };
     initFrame();
@@ -71,7 +71,7 @@ export default function PegSolitaire() {
         setUsername(data.username);
         setDisplayName(data.displayName);
       }
-    } catch (error) {
+    } catch {
     }
   };
 
@@ -82,7 +82,7 @@ export default function PegSolitaire() {
         const data = await response.json();
         setLeaderboard(data.leaderboard || []);
       }
-    } catch (error) {
+    } catch {
       setLeaderboard([]);
     }
   };
@@ -113,7 +113,7 @@ export default function PegSolitaire() {
         const data = await response.json();
         setLeaderboard(data.leaderboard);
       }
-    } catch (error) {
+    } catch {
     }
   };
 
@@ -127,6 +127,7 @@ export default function PegSolitaire() {
     return () => clearInterval(interval);
   }, [isTimerRunning]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const count = board.flat().filter(cell => cell === 'peg').length;
     setPegsRemaining(count);
