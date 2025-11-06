@@ -46,22 +46,17 @@ export default function PegSolitaire() {
   const [username, setUsername] = useState<string>('');
   const [displayName, setDisplayName] = useState<string>('');
 
-  // Initialize Farcaster Frame SDK and get user info
   useEffect(() => {
     const initFrame = async () => {
       try {
         const context = await sdk.context;
-        console.log('Frame context:', context);
         sdk.actions.ready();
         
-        // Get user FID from context
         if (context.user?.fid) {
           setUserFid(context.user.fid);
-          // Fetch user details from Neynar API
           fetchUserDetails(context.user.fid);
         }
       } catch (error) {
-        console.error('Frame SDK initialization error:', error);
       }
     };
     initFrame();
@@ -77,7 +72,6 @@ export default function PegSolitaire() {
         setDisplayName(data.displayName);
       }
     } catch (error) {
-      console.error('Error fetching user details:', error);
     }
   };
 
@@ -89,20 +83,13 @@ export default function PegSolitaire() {
         setLeaderboard(data.leaderboard || []);
       }
     } catch (error) {
-      console.error('Error loading leaderboard:', error);
       setLeaderboard([]);
     }
   };
 
   const saveScore = async (pegsLeft: number) => {
-    console.log('🎯 Attempting to save score...');
-    console.log('User FID:', userFid);
-    console.log('Username:', username);
-    console.log('Timer:', timer);
-    console.log('Pegs remaining:', pegsLeft);
     
     if (!userFid || !username) {
-      console.log('❌ No user info available - not saving score');
       return;
     }
 
@@ -125,15 +112,11 @@ export default function PegSolitaire() {
       if (response.ok) {
         const data = await response.json();
         setLeaderboard(data.leaderboard);
-        console.log('✅ Score saved successfully!');
-        console.log('New leaderboard:', data.leaderboard);
       }
     } catch (error) {
-      console.error('❌ Error saving score:', error);
     }
   };
 
-  // Timer
   useEffect(() => {
     if (!isTimerRunning) return;
 
@@ -144,18 +127,15 @@ export default function PegSolitaire() {
     return () => clearInterval(interval);
   }, [isTimerRunning]);
 
-  // Count pegs and check game status
   useEffect(() => {
     const count = board.flat().filter(cell => cell === 'peg').length;
     setPegsRemaining(count);
     
     if (count === 1) {
-      // Victoire (1 pion peu importe où)
       setGameWon(true);
       setIsTimerRunning(false);
       saveScore(count);
     } else if (count > 1) {
-      // Check if there are any valid moves left
       let movesExist = false;
       for (let row = 0; row < 7 && !movesExist; row++) {
         for (let col = 0; col < 7 && !movesExist; col++) {
@@ -169,7 +149,6 @@ export default function PegSolitaire() {
       }
       
       if (!movesExist) {
-        // Game over - sauvegarde aussi le score
         setGameOver(true);
         setIsTimerRunning(false);
         saveScore(count);
@@ -180,10 +159,10 @@ export default function PegSolitaire() {
   const getValidMovesForPeg = (row: number, col: number): Position[] => {
     const moves: Position[] = [];
     const directions = [
-      { dr: -2, dc: 0, jr: -1, jc: 0 }, // up
-      { dr: 2, dc: 0, jr: 1, jc: 0 },   // down
-      { dr: 0, dc: -2, jr: 0, jc: -1 }, // left
-      { dr: 0, dc: 2, jr: 0, jc: 1 },   // right
+      { dr: -2, dc: 0, jr: -1, jc: 0 },
+      { dr: 2, dc: 0, jr: 1, jc: 0 },
+      { dr: 0, dc: -2, jr: 0, jc: -1 },
+      { dr: 0, dc: 2, jr: 0, jc: 1 },
     ];
 
     directions.forEach(({ dr, dc, jr, jc }) => {
@@ -210,15 +189,12 @@ export default function PegSolitaire() {
 
     const cell = board[row][col];
 
-    // Si on clique sur un peg
     if (cell === 'peg') {
       const moves = getValidMovesForPeg(row, col);
       setSelectedPeg({ row, col });
       setValidMoves(moves);
     }
-    // Si on clique sur une destination valide
     else if (selectedPeg && validMoves.some(m => m.row === row && m.col === col)) {
-      // Start timer on first move
       if (!hasStarted) {
         setHasStarted(true);
         setIsTimerRunning(true);
@@ -228,7 +204,6 @@ export default function PegSolitaire() {
       setSelectedPeg(null);
       setValidMoves([]);
     }
-    // Déselectionner
     else {
       setSelectedPeg(null);
       setValidMoves([]);
