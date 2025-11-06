@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 
-const redis = Redis.fromEnv();
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_KV_REST_API_URL!,
+  token: process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN!,
+});
 
 interface LeaderboardEntry {
   fid: number;
@@ -14,7 +17,7 @@ interface LeaderboardEntry {
 // GET - Récupérer le leaderboard
 export async function GET() {
   try {
-    const leaderboard = await kv.get<LeaderboardEntry[]>('peg-solitaire-leaderboard') || [];
+    const leaderboard = await redis.get<LeaderboardEntry[]>('peg-solitaire-leaderboard') || [];
     return NextResponse.json({ leaderboard });
   } catch (error) {
     console.error('Error loading leaderboard:', error);
@@ -28,7 +31,7 @@ export async function POST(request: Request) {
     const newEntry: LeaderboardEntry = await request.json();
 
     // Charger le leaderboard actuel
-    let leaderboard = await kv.get<LeaderboardEntry[]>('peg-solitaire-leaderboard') || [];
+    let leaderboard = await redis.get<LeaderboardEntry[]>('peg-solitaire-leaderboard') || [];
 
     // Vérifier si l'utilisateur a déjà un meilleur score
     const existingEntry = leaderboard.find(entry => entry.fid === newEntry.fid);
@@ -49,7 +52,7 @@ export async function POST(request: Request) {
     leaderboard = leaderboard.slice(0, 10);
 
     // Sauvegarder
-    await kv.set('peg-solitaire-leaderboard', leaderboard);
+    await redis.set('peg-solitaire-leaderboard', leaderboard);
 
     return NextResponse.json({ leaderboard, message: 'Score saved' });
   } catch (error) {
