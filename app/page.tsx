@@ -26,6 +26,7 @@ interface LeaderboardEntry {
   username: string;
   displayName: string;
   time: number;
+  pegsRemaining: number;
   timestamp: number;
 }
 
@@ -93,11 +94,12 @@ export default function PegSolitaire() {
     }
   };
 
-  const saveScore = async () => {
+  const saveScore = async (pegsLeft: number) => {
     console.log('🎯 Attempting to save score...');
     console.log('User FID:', userFid);
     console.log('Username:', username);
     console.log('Timer:', timer);
+    console.log('Pegs remaining:', pegsLeft);
     
     if (!userFid || !username) {
       console.log('❌ No user info available - not saving score');
@@ -110,6 +112,7 @@ export default function PegSolitaire() {
         username,
         displayName,
         time: timer,
+        pegsRemaining: pegsLeft,
         timestamp: Date.now()
       };
 
@@ -146,11 +149,11 @@ export default function PegSolitaire() {
     const count = board.flat().filter(cell => cell === 'peg').length;
     setPegsRemaining(count);
     
-    if (count === 1 && board[3][3] === 'peg') {
+    if (count === 1) {
+      // Victoire (1 pion peu importe où)
       setGameWon(true);
       setIsTimerRunning(false);
-      // Save score when winning
-      saveScore();
+      saveScore(count);
     } else if (count > 1) {
       // Check if there are any valid moves left
       let movesExist = false;
@@ -166,8 +169,10 @@ export default function PegSolitaire() {
       }
       
       if (!movesExist) {
+        // Game over - sauvegarde aussi le score
         setGameOver(true);
         setIsTimerRunning(false);
+        saveScore(count);
       }
     }
   }, [board]);
@@ -621,14 +626,14 @@ export default function PegSolitaire() {
                           opacity: 0.7,
                           margin: 0
                         }}>
-                          @{entry.username}
+                          {entry.pegsRemaining} peg{entry.pegsRemaining > 1 ? 's' : ''}
                         </p>
                       </div>
 
                       <div style={{
-                        fontSize: '18px',
+                        fontSize: '16px',
                         fontWeight: '900',
-                        color: '#FFD700',
+                        color: entry.pegsRemaining === 1 ? '#FFD700' : '#CD853F',
                         fontVariantNumeric: 'tabular-nums',
                         flexShrink: 0
                       }}>
